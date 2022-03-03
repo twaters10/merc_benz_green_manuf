@@ -27,6 +27,7 @@ sample_submission.csv --> a sample submission file in the forrect format
 """
 
 import pandas as pd
+import numpy as np
 
 # Importing training and test sets
 DATA_PATH = 'C:\\Users\\tawate\OneDrive - SAS\\01_Training\\08_Kaggle\\Merc_Benz_Greener_Manufacturing\\Data\\'
@@ -43,4 +44,41 @@ train_df.describe()
 # Extract target, id, and feature variables
 train_id = train_df['ID']
 train_tg = train_df['y']
-train_var = train_df[2:]
+train_var = train_df.iloc[:,2:]
+
+# Feature variable exploration
+train_var.info()
+var_types = train_var.dtypes
+train_var.shape
+var_ex = train_var.describe()
+var_num = train_var.select_dtypes(include=['number'])
+var_cat = train_var.select_dtypes(exclude=['number'])
+
+# Historgram for each numeric feature
+for var in var_num:
+    var_num[var].plot.hist(grid = True, color = '#607c8e')
+
+# Unique values for each numeric and categorical features
+for col in var_num:
+    print(var_num[col].nunique())
+        
+# Target variable exploration
+train_tg.plot.hist(grind = True, color = '#607c8e')
+tg_stats = train_tg.describe()
+
+# Categorical Encoding
+from sklearn.preprocessing import OneHotEncoder
+enc = OneHotEncoder(sparse='False')
+# One hot Encode Example
+enc_df_example = pd.DataFrame(enc.fit_transform(var_cat[['X3']]).toarray())
+
+# One hot encode categorical columns with less than 10 unique values
+# Determine method for columns with more than 10 unique values
+for col in var_cat:
+    if var_cat[col].nunique() > 10:
+        print(var_cat[col].nunique())
+    else:
+        enc_df = pd.DataFrame(enc.fit_transform(var_cat[[col]]).toarray())
+        var_num.append(enc_df)
+# Feature engineering
+from sklearn.preprocessing import StandardScaler
