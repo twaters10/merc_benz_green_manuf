@@ -80,5 +80,6 @@ for col in var_cat:
     else:
         enc_df = pd.DataFrame(enc.fit_transform(var_cat[[col]]).toarray())
         var_num.append(enc_df)
+
 # Feature engineering
 from sklearn.preprocessing import StandardScaler
