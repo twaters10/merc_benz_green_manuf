@@ -131,7 +131,6 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error, r2_score
 import matplotlib.pyplot as plt
 
-#this is my update
 # Importing training and test sets
 DATA_PATH = 'C:\\Users\\tawate\OneDrive - SAS\\01_Training\\08_Kaggle\\Merc_Benz_Greener_Manufacturing\\Data\\'
 TRAIN = 'train.csv'
@@ -150,6 +149,7 @@ train_df.describe()
 train_id = train_df['ID']
 train_tg = train_df['y']
 train_var = train_df.iloc[:,2:]
+test_var = test_df.iloc[:,2:]
 
 # Feature variable exploration
 train_var.info()
@@ -184,6 +184,7 @@ tg_stats = train_tg.describe()
 
 # Coding Categorical Variables
 train_hot = cat_onehot(train_var)
+test_hot = cat_onehot(test_var)
 x_train, x_valid, y_train, y_valid = train_test_split(train_hot,train_tg, test_size = .3, 
                                                     random_state=0)
 
@@ -192,11 +193,6 @@ x_train, x_valid, y_train, y_valid = train_test_split(train_hot,train_tg, test_s
             - Backward Elimination
             - Forward Elimination
             - Random forest (variable importance)
-        Linear Feature creation methods:
-            - PCA
-            - FA (Factor Analysis)
-            - LDA (Linear Discriminant Analysis)
-            - Truncated SVD (Singular Value Decompisition)
 """
 
 # Regression Analysis without Feature Elimination
@@ -320,13 +316,14 @@ x_train_rf = x_train[selected_feat]
 x_valid_rf = x_valid[selected_feat]
 
 # Model diagnostics after selection
-# Linear Regression
+#-------------Linear Regression-------------
 reg_back = smf.OLS(endog = y_train, exog = x_train_new).fit()
 reg_rf = smf.OLS(endog = y_train, exog = x_train_rf).fit()
 print(regressor_OLS.summary())
 print(reg_rf.summary())
 print(reg_back.summary())
 
+# Back Selection
 reg_back_pred = reg_back.predict(x_valid_new)
 reg_back_er = abs(reg_back_pred - y_valid)
 # MAE
@@ -337,6 +334,7 @@ reg_back_mape = 100* (reg_back_er / y_valid)
 rf_reg_acc = 100 - np.mean(reg_back_mape)
 print('Accuracy:', round(rf_reg_acc, 2), '%.')
 
+# RF Variable Selection
 reg_rf_pred = reg_rf.predict(x_valid_rf)
 reg_rf_er = abs(reg_rf_pred - y_valid)
 # MAE
@@ -347,8 +345,8 @@ reg_rf_mape = 100* (reg_rf_er / y_valid)
 rf_reg_acc = 100 - np.mean(reg_rf_mape)
 print('Accuracy:', round(rf_reg_acc, 2), '%.')
 
-# Random Forest
-# Back
+#------------Random Forest----------------
+# Back Selection
 rf_back = rf.fit(x_train_new, y_train)
 rf_back_pred = rf_back.predict(x_valid_new)
 rf_back_er = abs(rf_back_pred - y_valid)
@@ -360,7 +358,7 @@ rf_back_mape = 100* (rf_back_er / y_valid)
 rf_back_acc = 100 - np.mean(rf_back_mape)
 print('Accuracy:', round(rf_back_acc, 2), '%.')
 
-# ---------------RF------------------
+# RF Variable Selection
 rf_rf = rf.fit(x_train_rf, y_train)
 rf_rf_pred = rf_rf.predict(x_valid_rf)
 rf_rf_er = abs(rf_rf_pred - y_valid)
@@ -372,7 +370,20 @@ rf_rf_mape = 100* (rf_rf_er / y_valid)
 rf_rf_acc = 100 - np.mean(rf_rf_mape)
 print('Accuracy:', round(rf_rf_acc, 2), '%.')
 
-    
-    
+#---------Ridge Regression-----------------
+from sklearn.linear_model import Ridge
+# Back Selection
+alpha = 10
+n, m = x_train_new.shape
+I = np.indentity(m)
+w = np.dot(np.dot(np.linalg.inv(np.dot(x_train_new.T, x_train_new) + alpha*I), x_train_new.T),y_train)
+rr_back = Ridge(alpha = 10)
+rr_back.fit(x_train_new, y_train)
+w = rr_back.coef_
+
+
+#-------Test Output-----------------------
+x_test_rf = test_hot[selected_feat]
+rf_test_pred = rf_rf.predict(x_test_rf)
 
 
