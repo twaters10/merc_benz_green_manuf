@@ -383,7 +383,18 @@ w = rr_back.coef_
 
 
 #-------Test Output-----------------------
-x_test_rf = test_hot[selected_feat]
-rf_test_pred = rf_rf.predict(x_test_rf)
+sel_feat = selected_feat.tolist()
+sel_feat_test = []
+for col in sel_feat:
+    if col in test_hot:
+        sel_feat_test.append(col)
+    else:
+        print(col, ' not in test set')
 
+x_train_rf2 = x_train_rf[sel_feat_test]
+rf_rf2 = rf.fit(x_train_rf2, y_train)
+x_test_rf = test_hot[sel_feat_test]
+rf_test_pred = rf_rf2.predict(x_test_rf)
+test_pred = pd.DataFrame(rf_test_pred, columns = ['prediction'])
+test_pred.to_csv('C:\\Users\\tawate\OneDrive - SAS\\01_Training\\08_Kaggle\\Merc_Benz_Greener_Manufacturing\\pred.csv')
 
